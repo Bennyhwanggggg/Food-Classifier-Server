@@ -1,65 +1,75 @@
 import express from 'express';
+import app from '../app';
 import * as tf from '@tensorflow/tfjs';
 
 import {IMAGENET_CLASSES} from './imagenet_classes';
+import fileUpload from 'express-fileupload';
 
-var router = express.Router();
+app.use(fileUpload());
+// var router = express.Router();
 /* GET home page. */
-router.get('/', function(req, res, next) {
+app.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
+
+app.post('/predict', (req, res) => {
+  // console.log(1232)
+  // console.log(req.files.image.data.data);
+  const datafile = req.files.image.data;
+  // console.log(datafile)
+  mobilenetDemo(req.files.image.data);
+  
+  res.sendStatus(400);
+})
 
 const MOBILENET_MODEL_PATH =
     // tslint:disable-next-line:max-line-length
     'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json';
 
-const IMAGE_SIZE = 224;
+const IMAGE_SIZE = 64;
 const TOPK_PREDICTIONS = 10;
 
 let mobilenet;
-const mobilenetDemo = async () => {
+const mobilenetDemo = async (data) => {
   console.log('Loading model...');
 
   // Pretrained model
-  mobilenet = await tf.loadLayersModel(MOBILENET_MODEL_PATH);
+  // mobilenet = await tf.loadLayersModel(MOBILENET_MODEL_PATH);
 
   // Load your own model
-  // mobilenet = await tf.loadLayersModel('./mymobilenet/mode.json');
+  const modelurl = 'https://storage.googleapis.com/foodai/model2_5.json';
+  mobilenet = await tf.loadLayersModel(modelurl, false);
 
   // Warmup the model. This isn't necessary, but makes the first prediction
   // faster. Call `dispose` to release the WebGL memory allocated for the return
   // value of `predict`.
   mobilenet.predict(tf.zeros([1, IMAGE_SIZE, IMAGE_SIZE, 3])).dispose();
 
+  predict(data)
+
   // Make a prediction through the locally hosted cat.jpg.
-  const catElement = document.getElementById('img');
-  if (catElement.complete && catElement.naturalHeight !== 0) {
-    predict(catElement);
-    catElement.style.display = '';
-  } else {
-    catElement.onload = () => {
-      predict(catElement);
-      catElement.style.display = '';
-    }
-  }
+  // const catElement = document.getElementById('img');
+  // if (catElement.complete && catElement.naturalHeight !== 0) {
+  //   predict(catElement);
+  //   catElement.style.display = '';
+  // } else {
+  //   catElement.onload = () => {
+  //     predict(catElement);
+  //     catElement.style.display = '';
+  //   }
+  // }
 };
 
 /**
  * Given an image element, makes a prediction through mobilenet returning the
  * probabilities of the top K classes.
  */
-async function predict(imgElement) {
+async function predict(data) {
   console.log('Predicting...');
-
-  // The first start time includes the time it takes to extract the image
-  // from the HTML and preprocess it, in additon to the predict() call.
-  const startTime1 = performance.now();
-  // The second start time excludes the extraction and preprocessing and
-  // includes only the predict() call.
-  let startTime2;
   const logits = tf.tidy(() => {
     // tf.browser.fromPixels() returns a Tensor from an image element.
-    const img = tf.browser.fromPixels(imgElement).toFloat();
+    const img = tf.fromPixels(data).toFloat();
+
 
     const offset = tf.scalar(127.5);
     // Normalize the image from [0, 255] to [-1, 1].
@@ -86,9 +96,7 @@ async function predict(imgElement) {
   console.log(predictions);
   const predictionsElement = document.getElementById('predictions');
   predictions.forEach(prediction => {
-    const elem = document.createElement('tr');
-    elem.innerHTML = `<th>${prediction.className}</th><th>${prediction.probability}</th>`;
-    predictionsElement.appendChild(elem);
+    console.log(prediction.className)
   });    
 }
 
