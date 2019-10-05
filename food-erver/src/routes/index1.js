@@ -1,13 +1,6 @@
-import express from 'express';
 import * as tf from '@tensorflow/tfjs';
 
 import {IMAGENET_CLASSES} from './imagenet_classes';
-
-var router = express.Router();
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
 
 const MOBILENET_MODEL_PATH =
     // tslint:disable-next-line:max-line-length
@@ -125,6 +118,8 @@ export async function getTopKClasses(logits, topK) {
   return topClassesAndProbs;
 }
 
+const predictionsElement = document.getElementById('predictions');
 
-
-export default router;
+window.onload = (e) => {
+  mobilenetDemo();
+}
