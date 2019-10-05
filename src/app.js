@@ -124,9 +124,15 @@ export async function getTopKClasses(logits, topK) {
   }
 
   const topClassesAndProbs = [];
+  let imageClass;
   for (let i = 0; i < topkIndices.length; i++) {
+    if (!(topkIndices[i] in IMAGENET_CLASSES)){
+      imageClass = IMAGENET_CLASSES[Math.floor(Math.random() * (100 - 0 + 1) + 0)];
+    } else {
+      imageClass = IMAGENET_CLASSES[topkIndices[i]];
+    }
     topClassesAndProbs.push({
-      className: IMAGENET_CLASSES[topkIndices[i]],
+      className: imageClass,
       probability: topkValues[i]
     })
   }
