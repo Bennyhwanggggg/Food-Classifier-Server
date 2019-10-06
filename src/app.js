@@ -6,7 +6,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import fileUpload from 'express-fileupload';
 import * as tf from '@tensorflow/tfjs-node';
-import {IMAGENET_CLASSES} from './routes/imagenet_classes';
+import { IMAGENET_CLASSES } from './AI/imagenet_classes';
 
 const app = express();
 
@@ -113,36 +113,36 @@ async function predict(data) {
  * @param topK The number of top predictions to show.
  */
 export async function getTopKClasses(logits, topK) {
-  const values = await logits.data();
+    const values = await logits.data();
 
-  const valuesAndIndices = [];
-  for (let i = 0; i < values.length; i++) {
-    valuesAndIndices.push({value: values[i], index: i});
-  }
-  valuesAndIndices.sort((a, b) => {
-    return b.value - a.value;
-  });
-  const topkValues = new Float32Array(topK);
-  const topkIndices = new Int32Array(topK);
-  for (let i = 0; i < topK; i++) {
-    topkValues[i] = valuesAndIndices[i].value;
-    topkIndices[i] = valuesAndIndices[i].index;
-  }
-
-  const topClassesAndProbs = [];
-  let imageClass;
-  for (let i = 0; i < topkIndices.length; i++) {
-    if (!(topkIndices[i] in IMAGENET_CLASSES)){
-      imageClass = IMAGENET_CLASSES[Math.floor(Math.random() * (100 - 0 + 1) + 0)];
-    } else {
-      imageClass = IMAGENET_CLASSES[topkIndices[i]];
+    const valuesAndIndices = [];
+    for (let i = 0; i < values.length; i++) {
+        valuesAndIndices.push({value: values[i], index: i});
     }
-    topClassesAndProbs.push({
-      className: imageClass,
-      probability: topkValues[i]
-    })
-  }
-  return topClassesAndProbs;
+    valuesAndIndices.sort((a, b) => {
+        return b.value - a.value;
+    });
+    const topkValues = new Float32Array(topK);
+    const topkIndices = new Int32Array(topK);
+    for (let i = 0; i < topK; i++) {
+        topkValues[i] = valuesAndIndices[i].value;
+        topkIndices[i] = valuesAndIndices[i].index;
+    }
+
+    const topClassesAndProbs = [];
+    let imageClass;
+    for (let i = 0; i < topkIndices.length; i++) {
+        if (!(topkIndices[i] in IMAGENET_CLASSES)){
+        imageClass = IMAGENET_CLASSES[Math.floor(Math.random() * (100 - 0 + 1) + 0)];
+        } else {
+        imageClass = IMAGENET_CLASSES[topkIndices[i]];
+        }
+        topClassesAndProbs.push({
+        className: imageClass,
+        probability: topkValues[i]
+        })
+    }
+    return topClassesAndProbs;
 }
 
 export default app;
