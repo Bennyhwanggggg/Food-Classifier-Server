@@ -133,13 +133,13 @@ export async function getTopKClasses(logits, topK) {
     let imageClass;
     for (let i = 0; i < topkIndices.length; i++) {
         if (!(topkIndices[i] in IMAGENET_CLASSES)){
-        imageClass = IMAGENET_CLASSES[Math.floor(Math.random() * (100 - 0 + 1) + 0)];
+            imageClass = IMAGENET_CLASSES[Math.floor(Math.random() * (100 - 0 + 1) + 0)];
         } else {
-        imageClass = IMAGENET_CLASSES[topkIndices[i]];
+            imageClass = IMAGENET_CLASSES[topkIndices[i]];
         }
         topClassesAndProbs.push({
-        className: imageClass,
-        probability: topkValues[i]
+            className: imageClass,
+            probability: topkValues[i]
         })
     }
     return topClassesAndProbs;
